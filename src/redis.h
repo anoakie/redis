@@ -1397,6 +1397,8 @@ void zinterstoreCommand(redisClient *c);
 void hkeysCommand(redisClient *c);
 void hvalsCommand(redisClient *c);
 void hgetallCommand(redisClient *c);
+void happendCommand(redisClient *c);
+void happendxCommand(redisClient *c);
 void hexistsCommand(redisClient *c);
 void configCommand(redisClient *c);
 void hincrbyCommand(redisClient *c);
