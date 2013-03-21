@@ -842,7 +842,6 @@ void genericHappendCommand(redisClient *c, int nx) {
         totlen = hashTypeAppend(o,c->argv[2],c->argv[3]);
         addReplyLongLong(c, totlen);
         signalModifiedKey(c->db,c->argv[1]);
-        notifyKeyspaceEvent(REDIS_NOTIFY_HASH,"happend",c->argv[1],c->db->id);
         server.dirty++;
     }
 }
