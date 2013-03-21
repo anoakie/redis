@@ -210,9 +210,10 @@ size_t hashTypeAppend(robj *o, robj *field, robj *append) {
 
         if (!update) {
             /* Push new field/value pair onto the tail of the ziplist */
+            value = append;
             zl = ziplistPush(zl, field->ptr, sdslen(field->ptr), ZIPLIST_TAIL);
-            zl = ziplistPush(zl, append->ptr, sdslen(append->ptr), ZIPLIST_TAIL);
-            totlen = sdslen(append->ptr);
+            zl = ziplistPush(zl, value->ptr, sdslen(value->ptr), ZIPLIST_TAIL);
+            totlen = sdslen(value->ptr);
         }
 
         o->ptr = zl;
@@ -220,7 +221,8 @@ size_t hashTypeAppend(robj *o, robj *field, robj *append) {
         decrRefCount(append);
 
         /* Check if the ziplist needs to be converted to a hash table */
-        if (hashTypeLength(o) > server.hash_max_ziplist_entries)
+        if (hashTypeLength(o) > server.hash_max_ziplist_entries ||
+                totlen > server.hash_max_ziplist_value)
             hashTypeConvert(o, REDIS_ENCODING_HT);
     } else if (o->encoding == REDIS_ENCODING_HT) {
         /* Append to current string */
@@ -839,7 +841,7 @@ void genericHappendCommand(redisClient *c, int nx) {
     if ((o = hashTypeLookupWriteOrCreate(c,c->argv[1])) == NULL) return;
     hashTypeTryConversion(o,c->argv,2,3);
 
-    if (!hashTypeExists(o, c->argv[2]) && !nx) {
+    if (!nx && !hashTypeExists(o, c->argv[2])) {
         addReply(c, shared.czero);
         return;
     } else {

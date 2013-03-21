@@ -140,6 +140,13 @@ start_server {tags {"hash"}} {
         set _ $rv
     } {6 foobar}
 
+    test {HAPPEND Is a ziplist encoded Hash promoted on big payload?} {
+        r hset myhash foo bar
+        assert_encoding ziplist myhash
+        r happend myhash foo [string repeat a 1024]
+        r debug object myhash
+    } {*hashtable*}
+
     test {HAPPENDX target key missing - small hash} {
         set rv {}
         lappend rv [r happendx smallhash __123123123__ foo]
