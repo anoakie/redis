@@ -838,7 +838,7 @@ void genericHappendCommand(redisClient *c, int nx) {
         addReply(c, shared.czero);
         return;
     } else {
-        hashTypeTryObjectEncoding(o,&c->argv[2], &c->argv[3]);
+        hashTypeTryObjectEncoding(o,&c->argv[2],NULL);
         totlen = hashTypeAppend(o,c->argv[2],c->argv[3]);
         addReplyLongLong(c, totlen);
         signalModifiedKey(c->db,c->argv[1]);
