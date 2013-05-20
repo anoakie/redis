@@ -195,7 +195,10 @@ size_t hashTypeAppend(robj *o, robj *field, robj *append) {
                 /* Append to current string */
                 ret = ziplistGet(vptr, &vstr, &vlen, &vll);
                 redisAssert(ret);
-                value = createStringObject((char *)vstr, (size_t)vlen);
+                if (vstr == NULL)
+                    value = createStringObjectFromLongLong(vll);
+                else
+                    value = createStringObject((char *)vstr, (size_t)vlen);
                 value->ptr = sdscatlen(value->ptr, append->ptr, sdslen(append->ptr));
 
                 /* Delete value */
@@ -840,7 +843,7 @@ void genericHappendCommand(redisClient *c, int nx) {
     } else {
         hashTypeTryObjectEncoding(o,&c->argv[2],NULL);
         totlen = hashTypeAppend(o,c->argv[2],c->argv[3]);
-        addReplyLongLong(c, totlen);
+        addReplyLongLong(c,totlen);
         signalModifiedKey(c->db,c->argv[1]);
         server.dirty++;
     }
