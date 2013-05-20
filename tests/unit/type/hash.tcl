@@ -147,6 +147,16 @@ start_server {tags {"hash"}} {
         r debug object myhash
     } {*hashtable*}
 
+    test {HAPPEND Can I convert a ziplist with an int to a string} {
+        set rv {}
+        r hset myziplist foo "12345678"
+        assert_encoding ziplist myziplist
+        lappend rv [r happend myziplist foo "87654321"]
+        lappend rv [r hget myziplist foo]
+        r del myziplist
+        set _ $rv
+    } {16 1234567887654321}
+
     test {HAPPENDX target key missing - small hash} {
         set rv {}
         lappend rv [r happendx smallhash __123123123__ foo]

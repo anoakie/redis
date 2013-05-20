@@ -195,10 +195,17 @@ size_t hashTypeAppend(robj *o, robj *field, robj *append) {
                 /* Append to current string */
                 ret = ziplistGet(vptr, &vstr, &vlen, &vll);
                 redisAssert(ret);
+
                 if (vstr == NULL)
                     value = createStringObjectFromLongLong(vll);
                 else
-                    value = createStringObject((char *)vstr, (size_t)vlen);
+                    value = createStringObject((char *)vstr, vlen);
+                if (value->encoding != REDIS_ENCODING_RAW) {
+                    robj *decoded = getDecodedObject(value);
+                    value = createStringObject(decoded->ptr, sdslen(decoded->ptr));
+                    decrRefCount(decoded);
+                }
+
                 value->ptr = sdscatlen(value->ptr, append->ptr, sdslen(append->ptr));
 
                 /* Delete value */
