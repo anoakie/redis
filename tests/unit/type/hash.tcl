@@ -189,6 +189,15 @@ start_server {tags {"hash"}} {
         set _ $rv
     } {6 foobar}
 
+    test {HAPPENDX append ints to ints - big hash} {
+        set rv {}
+        r hset bighash __123123123__ 12345678
+        lappend rv [r happendx bighash __123123123__ 87654321]
+        lappend rv [r hget bighash __123123123__]
+        r hdel bighash __123123123__
+        set _ $rv
+    } {16 1234567887654321}
+
     test {HMSET wrong number of args} {
         catch {r hmset smallhash key1 val1 key2} err
         format $err

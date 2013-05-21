@@ -237,6 +237,11 @@ size_t hashTypeAppend(robj *o, robj *field, robj *append) {
     } else if (o->encoding == REDIS_ENCODING_HT) {
         /* Append to current string */
         if ((value = hashTypeGetObject(o,field)) != NULL) {
+            if (value->encoding != REDIS_ENCODING_RAW) {
+                robj *decoded = getDecodedObject(value);
+                value = createStringObject(decoded->ptr, sdslen(decoded->ptr));
+                decrRefCount(decoded);
+            }
             value->ptr = sdscatlen(value->ptr,append->ptr,sdslen(append->ptr));
         } else {
             value = append;
