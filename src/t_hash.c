@@ -196,12 +196,16 @@ size_t hashTypeAppend(robj *o, robj *field, robj *append) {
                 ret = ziplistGet(vptr, &vstr, &vlen, &vll);
                 redisAssert(ret);
 
+                /* Handle strings and longs */
                 if (vstr == NULL)
                     value = createStringObjectFromLongLong(vll);
                 else
                     value = createStringObject((char *)vstr, vlen);
+
+                /* Decode non-raw values */
                 if (value->encoding != REDIS_ENCODING_RAW) {
                     robj *decoded = getDecodedObject(value);
+                    decrRefCount(value);
                     value = createStringObject(decoded->ptr, sdslen(decoded->ptr));
                     decrRefCount(decoded);
                 }
@@ -239,6 +243,7 @@ size_t hashTypeAppend(robj *o, robj *field, robj *append) {
         if ((value = hashTypeGetObject(o,field)) != NULL) {
             if (value->encoding != REDIS_ENCODING_RAW) {
                 robj *decoded = getDecodedObject(value);
+                decrRefCount(value);
                 value = createStringObject(decoded->ptr, sdslen(decoded->ptr));
                 decrRefCount(decoded);
             }
